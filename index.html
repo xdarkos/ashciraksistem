@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5">
+<meta name="theme-color" content="#fbf6f3">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Ash Kuaför · Haftalık Görev Programı</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+  :root{
+    --bg:#fbf6f3;
+    --ink:#2b1f23;
+    --ink-soft:#4a3a40;
+    --muted:#9a8a92;
+    --rose:#a8516e;
+    --rose-dark:#7c3a50;
+    --gold:#c9a24a;
+    --line:rgba(168,81,110,.12);
+    --shadow-sm:0 2px 10px rgba(124,58,80,.06);
+    --shadow-md:0 6px 24px rgba(124,58,80,.08);
+  }
+
+  html{ -webkit-text-size-adjust:100%; touch-action:manipulation; }
+
+  body{
+    font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+    color:var(--ink);
+    background:var(--bg);
+    min-height:100vh;
+    min-height:100dvh;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    -webkit-tap-highlight-color:transparent;
+    overflow-x:hidden;
+    padding-bottom:calc(30px + env(safe-area-inset-bottom));
+  }
+
+  /* Arka plan ışıkları */
+  body::before{
+    content:'';
+    position:fixed;
+    inset:0;
+    z-index:0;
+    pointer-events:none;
+    background:
+      radial-gradient(620px 420px at 8% -8%, rgba(168,81,110,.16), transparent 65%),
+      radial-gradient(520px 400px at 96% 2%, rgba(201,162,74,.14), transparent 65%),
+      radial-gradient(700px 520px at 50% 108%, rgba(168,81,110,.10), transparent 65%);
+  }
+
+  /* ============ ÜST BAR ============ */
+  .topbar{
+    position:sticky;
+    top:0;
+    z-index:50;
+    background:rgba(251,246,243,.78);
+    -webkit-backdrop-filter:blur(18px) saturate(180%);
+    backdrop-filter:blur(18px) saturate(180%);
+    border-bottom:1px solid var(--line);
+    padding-top:env(safe-area-inset-top);
+  }
+  .topbar-inner{
+    max-width:1120px;
+    margin:0 auto;
+    padding:11px 16px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+  }
+  .brand{display:flex;flex-direction:column;line-height:1;user-select:none}
+  .brand b{
+    font-family:'Playfair Display',Georgia,serif;
+    font-size:20px;font-weight:600;
+    letter-spacing:.30em;text-indent:.30em;
+    color:var(--rose-dark);
+  }
+  .brand small{
+    font-size:7.5px;font-weight:700;
+    letter-spacing:.52em;text-indent:.52em;
+    color:var(--gold);margin-top:4px;
+  }
+  .today-btn{
+    font:inherit;
+    font-size:10.5px;font-weight:700;
+    letter-spacing:.08em;text-transform:uppercase;
+    padding:9px 15px;
+    border-radius:100px;
+    border:1px solid rgba(168,81,110,.28);
+    background:#fff;
+    color:var(--rose-dark);
+    cursor:pointer;
+    box-shadow:var(--shadow-sm);
+    transition:all .22s ease;
+    white-space:nowrap;
+    touch-action:manipulation;
+  }
+  .today-btn:active{transform:scale(.93)}
+  .today-btn.hide{opacity:0;pointer-events:none;transform:scale(.9)}
+
+  /* ============ ANA SARMAL ============ */
+  .wrap{
+    position:relative;
+    z-index:1;
+    max-width:1120px;
+    margin:0 auto;
+    padding:16px 14px 0;
+  }
+
+  /* ============ HAFTALIK PANEL ============ */
+  .week-panel{
+    position:relative;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:16px 10px;
+    margin-bottom:18px;
+    border-radius:24px;
+    background:linear-gradient(155deg,#ffffff 0%,#fdf7f4 100%);
+    border:1px solid var(--line);
+    box-shadow:var(--shadow-md);
+    overflow:hidden;
+  }
+  .week-panel::before{
+    content:'';
+    position:absolute;
+    top:-70px;right:-60px;
+    width:200px;height:200px;
+    border-radius:50%;
+    background:radial-gradient(circle,rgba(201,162,74,.16),transparent 70%);
+    pointer-events:none;
+  }
+  .week-panel::after{
+    content:'';
+    position:absolute;
+    bottom:-80px;left:-50px;
+    width:180px;height:180px;
+    border-radius:50%;
+    background:radial-gradient(circle,rgba(168,81,110,.10),transparent 70%);
+    pointer-events:none;
+  }
+
+  .nav-btn{
+    position:relative;
+    z-index:2;
+    width:46px;height:46px;
+    flex:0 0 auto;
+    display:grid;place-items:center;
+    border-radius:16px;
+    border:1px solid var(--line);
+    background:#fff;
+    color:var(--rose);
+    cursor:pointer;
+    box-shadow:var(--shadow-sm);
+    transition:all .18s ease;
+    touch-action:manipulation;
+  }
+  .nav-btn svg{width:19px;height:19px}
+  .nav-btn:active{transform:scale(.90);background:var(--rose);color:#fff;border-color:var(--rose)}
+
+  .week-meta{
+    position:relative;
+    z-index:2;
+    flex:1;
+    min-width:0;
+    text-align:center;
+    padding:0 2px;
+  }
+  .eyebrow{
+    font-size:8.5px;
+    font-weight:700;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--gold);
+    margin-bottom:7px;
+  }
+  .week-dates{
+    font-family:'Playfair Display',Georgia,serif;
+    font-size:17px;
+    font-weight:600;
+    line-height:1.3;
+    color:var(--ink);
+    letter-spacing:-.01em;
+  }
+  .week-badge{
+    display:inline-block;
+    margin-top:8px;
+    font-size:9.5px;
+    font-weight:700;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--rose);
+    background:rgba(168,81,110,.10);
+    padding:3.5px 11px;
+    border-radius:100px;
+  }
+
+  /* ============ KART IZGARASI ============ */
+  .grid{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:12px;
+  }
+  @media(min-width:520px){
+    .grid{grid-template-columns:repeat(2,1fr);gap:14px}
+  }
+  @media(min-width:880px){
+    .grid{grid-template-columns:repeat(3,1fr);gap:16px}
+  }
+  @media(min-width:1180px){
+    .grid{grid-template-columns:repeat(4,1fr)}
+  }
+
+  /* ============ KİŞİ KARTI ============ */
+  @keyframes cardIn{
+    from{opacity:0;transform:translateY(12px) scale(.985)}
+    to{opacity:1;transform:translateY(0) scale(1)}
+  }
+
+  .card{
+    position:relative;
+    background:#fff;
+    border-radius:20px;
+    padding:15px 15px 14px;
+    border:1px solid rgba(0,0,0,.045);
+    box-shadow:0 3px 16px rgba(124,58,80,.06);
+    overflow:hidden;
+    animation:cardIn .45s cubic-bezier(.22,.9,.3,1) backwards;
+    transition:transform .2s ease, box-shadow .2s ease;
+  }
+  .card::before{
+    content:'';
+    position:absolute;
+    left:0;top:0;bottom:0;
+    width:4px;
+    background:linear-gradient(180deg,var(--c),var(--c2));
+    opacity:.95;
+  }
+  .card::after{
+    content:'';
+    position:absolute;
+    top:-70px;right:-50px;
+    width:170px;height:170px;
+    border-radius:50%;
+    background:radial-gradient(circle,var(--soft),transparent 70%);
+    pointer-events:none;
+  }
+
+  .card-head{
+    position:relative;
+    display:flex;
+    align-items:center;
+    gap:11px;
+    margin-bottom:13px;
+  }
+  .avatar{
+    width:44px;height:44px;
+    flex:0 0 auto;
+    display:grid;place-items:center;
+    border-radius:14px;
+    font-family:'Playfair Display',Georgia,serif;
+    font-size:20px;font-weight:600;
+    color:#fff;
+    background:linear-gradient(135deg,var(--c),var(--c2));
+    box-shadow:0 5px 14px var(--soft);
+  }
+  .who{min-width:0;flex:1}
+  .who h2{
+    font-size:15.5px;
+    font-weight:600;
+    letter-spacing:.01em;
+    color:var(--ink);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .cnt{
+    flex:0 0 auto;
+    min-width:26px;height:26px;
+    padding:0 6px;
+    display:grid;place-items:center;
+    border-radius:100px;
+    font-size:11.5px;
+    font-weight:700;
+    color:var(--c);
+    background:var(--soft);
+  }
+
+  /* ============ GÖREV LİSTESİ ============ */
+  .tasks{
+    list-style:none;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .task{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:9px 10px;
+    border-radius:13px;
+    background:#fdfaf9;
+    border:1px solid rgba(168,81,110,.07);
+    font-size:12.8px;
+    line-height:1.3;
+    color:var(--ink-soft);
+    font-weight:500;
+  }
+  .ico{
+    width:28px;height:28px;
+    flex:0 0 auto;
+    display:grid;place-items:center;
+    border-radius:9px;
+    font-size:14px;
+    background:var(--soft);
+    line-height:1;
+  }
+  .task span:last-child{
+    min-width:0;
+    word-break:break-word;
+  }
+
+  .foot{
+    text-align:center;
+    font-size:10.5px;
+    line-height:1.7;
+    color:var(--muted);
+    margin:22px 0 0;
+    padding:0 12px;
+  }
+
+  /* ============ KÜÇÜK TELEFONLAR ============ */
+  @media(max-width:360px){
+    .wrap{padding:14px 11px 0}
+    .brand b{font-size:18px}
+    .week-dates{font-size:15px}
+    .week-panel{padding:14px 8px}
+    .nav-btn{width:42px;height:42px;border-radius:14px}
+    .avatar{width:40px;height:40px;font-size:18px;border-radius:12px}
+    .task{font-size:12.2px;padding:8px 9px}
+    .ico{width:26px;height:26px;font-size:13px}
+  }
+
+  /* ============ YATAY TELEFON ============ */
+  @media(max-height:480px) and (orientation:landscape){
+    .week-panel{padding:10px 12px;margin-bottom:14px}
+    .eyebrow{display:none}
+    .week-badge{margin-top:5px}
+    .week-dates{font-size:15px}
+  }
+</style>
+</head>
+<body>
+
+<!-- ÜST BAR -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <b>ASH</b>
+      <small>KUAFÖR</small>
+    </div>
+    <button class="today-btn hide" id="todayBtn">Bu Hafta</button>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- HAFTALIK PANEL -->
+  <section class="week-panel" aria-label="Hafta seçici">
+    <button class="nav-btn" id="prev" aria-label="Önceki hafta">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+           stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+
+    <div class="week-meta">
+      <div class="eyebrow">Haftalık Görev Programı</div>
+      <div class="week-dates" id="dates">—</div>
+      <div class="week-badge" id="badge">Bu Hafta</div>
+    </div>
+
+    <button class="nav-btn" id="next" aria-label="Sonraki hafta">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+           stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+    </button>
+  </section>
+
+  <!-- KARTLAR -->
+  <main class="grid" id="grid"></main>
+
+  <p class="foot">Her çırak haftada 2 görev yapar · Program her hafta otomatik yenilenir</p>
+
+</div>
+
+<script>
+/* =========================================================
+   1) VERİLER
+   ========================================================= */
+
+const PEOPLE = [
+  { name:'Tahan',   c:'#a8516e', c2:'#c76d8a', soft:'rgba(168,81,110,.11)' },
+  { name:'Ezel',    c:'#b8923a', c2:'#d6b25c', soft:'rgba(201,162,74,.13)' },
+  { name:'Hira',    c:'#6d7f62', c2:'#8fa383', soft:'rgba(122,139,111,.13)' },
+  { name:'Rahman',  c:'#5578a0', c2:'#7a9ac0', soft:'rgba(95,126,168,.12)' },
+  { name:'Sofia',   c:'#a06a42', c2:'#c48e62', soft:'rgba(176,120,79,.13)' },
+  { name:'Müberra', c:'#7d63a0', c2:'#9c83c0', soft:'rgba(138,111,168,.13)' },
+  { name:'Irmak',   c:'#338580', c2:'#57a8a3', soft:'rgba(63,143,138,.13)' },
+  { name:'Zeynep',  c:'#a85252', c2:'#c87272', soft:'rgba(184,92,92,.13)' }
+];
+
+/* Görev listesi (kesim arabası hariç — o Tahan'a sabit) */
+const TASKS = [
+  'Yer Silme',
+  'Yer Süpürme',
+  'Toz Alma',
+  'Mutfak',
+  'Yıkama Seti',
+  'Havlular',
+  'Tuvalet',
+  'Boya Arabaları',
+  'Ağda Odası',
+  'Bakım Odası',
+  'Aynalar',
+  'Çöpler',
+  'Makyaj Bölümü',
+  'Koltuklar',
+  'Fön Makineleri'
+];
+
+/* Görev ikonları */
+const ICONS = {
+  'Yer Silme':'🧽',
+  'Yer Süpürme':'🧹',
+  'Toz Alma':'🧴',
+  'Mutfak':'☕',
+  'Yıkama Seti':'🚿',
+  'Havlular':'🧺',
+  'Tuvalet':'🚽',
+  'Boya Arabaları':'🎨',
+  'Ağda Odası':'🕯️',
+  'Bakım Odası':'💆',
+  'Aynalar':'🪞',
+  'Çöpler':'🗑️',
+  'Makyaj Bölümü':'💄',
+  'Koltuklar':'🛋️',
+  'Fön Makineleri':'💨',
+  'Kesim Arabası Temizliği':'✂️'
+};
+
+const FIXED_TASK  = 'Kesim Arabası Temizliği';
+const FIXED_OWNER = 'Tahan';
+const CYCLE       = TASKS.length;              // 15 haftada bir başa döner
+const BASE_MONDAY = new Date(2024, 0, 1);      // Referans Pazartesi
+
+/* =========================================================
+   2) YARDIMCI FONKSİYONLAR
+   ========================================================= */
+
+const pad = n => String(n).padStart(2, '0');
+const mod = (n, m) => ((n % m) + m) % m;
+
+function startOfWeek(d){
+  const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const day = (x.getDay() + 6) % 7;   // Pazartesi = 0
+  x.setDate(x.getDate() - day);
+  return x;
+}
+
+function fmtRange(a, b){
+  const o = { day:'numeric', month:'long' };
+  const sa = a.toLocaleDateString('tr-TR', o);
+  const sb = b.toLocaleDateString('tr-TR', o);
+  const ya = a.getFullYear(), yb = b.getFullYear();
+  return ya === yb ? `${sa} – ${sb} ${ya}` : `${sa} ${ya} – ${sb} ${yb}`;
+}
+
+const THIS_MONDAY = startOfWeek(new Date());
+const AUTO_INDEX  = Math.round((THIS_MONDAY - BASE_MONDAY) / 604800000);
+
+/* =========================================================
+   3) HAFTALIK PLAN
+   - Tahan: Kesim Arabası (sabit) + 1 dönen görev
+   - Diğer 7 çırak: kalan 14 görevi 2'şer paylaşır
+   ========================================================= */
+
+function buildPlan(idx){
+  const plan = {};
+  PEOPLE.forEach(p => plan[p.name] = []);
+
+  plan[FIXED_OWNER].push(FIXED_TASK);
+  plan[FIXED_OWNER].push(TASKS[idx % CYCLE]);
+
+  const rest = [];
+  for (let k = 1; k < CYCLE; k++){
+    rest.push(TASKS[(idx + k) % CYCLE]);
+  }
+
+  const others = PEOPLE.filter(p => p.name !== FIXED_OWNER);
+  others.forEach((p, i) => {
+    plan[p.name].push(rest[2 * i]);
+    plan[p.name].push(rest[2 * i + 1]);
+  });
+
+  return plan;
+}
+
+/* =========================================================
+   4) DURUM
+   ========================================================= */
+
+let offset = 0;
+
+/* =========================================================
+   5) ÇİZİM
+   ========================================================= */
+
+const $grid     = document.getElementById('grid');
+const $dates    = document.getElementById('dates');
+const $badge    = document.getElementById('badge');
+const $todayBtn = document.getElementById('todayBtn');
+
+function currentMonday(){
+  const m = new Date(THIS_MONDAY);
+  m.setDate(m.getDate() + offset * 7);
+  return m;
+}
+
+function renderCards(monday){
+  const idx  = mod(AUTO_INDEX + offset, CYCLE);
+  const plan = buildPlan(idx);
+
+  $grid.innerHTML = '';
+
+  PEOPLE.forEach((person, i) => {
+    const tasks = plan[person.name];
+
+    const card = document.createElement('article');
+    card.className = 'card';
+    card.style.setProperty('--c', person.c);
+    card.style.setProperty('--c2', person.c2);
+    card.style.setProperty('--soft', person.soft);
+    card.style.animationDelay = (i * 45) + 'ms';
+
+    /* Başlık */
+    const head = document.createElement('div');
+    head.className = 'card-head';
+
+    const av = document.createElement('div');
+    av.className = 'avatar';
+    av.textContent = person.name.charAt(0);
+
+    const who = document.createElement('div');
+    who.className = 'who';
+    const h2 = document.createElement('h2');
+    h2.textContent = person.name;
+    who.appendChild(h2);
+
+    const cnt = document.createElement('div');
+    cnt.className = 'cnt';
+    cnt.textContent = tasks.length;
+
+    head.append(av, who, cnt);
+
+    /* Görevler */
+    const ul = document.createElement('ul');
+    ul.className = 'tasks';
+
+    tasks.forEach(task => {
+      const li = document.createElement('li');
+      li.className = 'task';
+
+      const ic = document.createElement('span');
+      ic.className = 'ico';
+      ic.textContent = ICONS[task] || '•';
+
+      const tx = document.createElement('span');
+      tx.textContent = task;
+
+      li.append(ic, tx);
+      ul.appendChild(li);
+    });
+
+    card.append(head, ul);
+    $grid.appendChild(card);
+  });
+}
+
+function render(){
+  const monday = currentMonday();
+  const sunday = new Date(monday);
+  sunday.setDate(sunday.getDate() + 6);
+
+  $dates.textContent = fmtRange(monday, sunday);
+
+  $badge.textContent =
+    offset === 0  ? 'Bu Hafta' :
+    offset === 1  ? 'Gelecek Hafta' :
+    offset === -1 ? 'Geçen Hafta' :
+    offset > 0    ? `${offset} Hafta Sonra` : `${-offset} Hafta Önce`;
+
+  $todayBtn.classList.toggle('hide', offset === 0);
+
+  renderCards(monday);
+}
+
+/* =========================================================
+   6) OLAYLAR
+   ========================================================= */
+
+function goPrev(){ offset -= 1; render(); }
+function goNext(){ offset += 1; render(); }
+
+document.getElementById('prev').addEventListener('click', goPrev);
+document.getElementById('next').addEventListener('click', goNext);
+
+$todayBtn.addEventListener('click', () => {
+  if (offset !== 0){ offset = 0; render(); }
+});
+
+/* --- Mobil: sağa/sola kaydırarak hafta değiştir --- */
+let tX = 0, tY = 0, tTime = 0;
+
+$grid.addEventListener('touchstart', e => {
+  if (e.touches.length !== 1) return;
+  tX = e.touches[0].clientX;
+  tY = e.touches[0].clientY;
+  tTime = Date.now();
+}, { passive:true });
+
+$grid.addEventListener('touchend', e => {
+  if (!e.changedTouches || !e.changedTouches.length) return;
+  const dx = e.changedTouches[0].clientX - tX;
+  const dy = e.changedTouches[0].clientY - tY;
+  const dt = Date.now() - tTime;
+
+  if (dt < 600 && Math.abs(dx) > 65 && Math.abs(dy) < 55){
+    if (dx < 0) goNext(); else goPrev();
+  }
+}, { passive:true });
+
+/* --- Klavye okları (masaüstü) --- */
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft')  goPrev();
+  if (e.key === 'ArrowRight') goNext();
+});
+
+/* Başlat */
+render();
+</script>
+</body>
+</html>
