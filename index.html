@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#fbf6f3">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>Ash Kuaför · Haftalık Görev Programı</title>
+<title>Ash Kuaför · Günlük Görev Programı</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -41,7 +41,6 @@
     padding-bottom:calc(30px + env(safe-area-inset-bottom));
   }
 
-  /* Arka plan ışıkları */
   body::before{
     content:'';
     position:fixed;
@@ -59,7 +58,7 @@
     position:sticky;
     top:0;
     z-index:50;
-    background:rgba(251,246,243,.78);
+    background:rgba(251,246,243,.80);
     -webkit-backdrop-filter:blur(18px) saturate(180%);
     backdrop-filter:blur(18px) saturate(180%);
     border-bottom:1px solid var(--line);
@@ -119,9 +118,9 @@
     display:flex;
     align-items:center;
     gap:8px;
-    padding:16px 10px;
-    margin-bottom:18px;
-    border-radius:24px;
+    padding:15px 10px;
+    margin-bottom:14px;
+    border-radius:22px;
     background:linear-gradient(155deg,#ffffff 0%,#fdf7f4 100%);
     border:1px solid var(--line);
     box-shadow:var(--shadow-md);
@@ -145,14 +144,13 @@
     background:radial-gradient(circle,rgba(168,81,110,.10),transparent 70%);
     pointer-events:none;
   }
-
   .nav-btn{
     position:relative;
     z-index:2;
-    width:46px;height:46px;
+    width:44px;height:44px;
     flex:0 0 auto;
     display:grid;place-items:center;
-    border-radius:16px;
+    border-radius:15px;
     border:1px solid var(--line);
     background:#fff;
     color:var(--rose);
@@ -161,7 +159,7 @@
     transition:all .18s ease;
     touch-action:manipulation;
   }
-  .nav-btn svg{width:19px;height:19px}
+  .nav-btn svg{width:18px;height:18px}
   .nav-btn:active{transform:scale(.90);background:var(--rose);color:#fff;border-color:var(--rose)}
 
   .week-meta{
@@ -178,11 +176,11 @@
     letter-spacing:.22em;
     text-transform:uppercase;
     color:var(--gold);
-    margin-bottom:7px;
+    margin-bottom:6px;
   }
   .week-dates{
     font-family:'Playfair Display',Georgia,serif;
-    font-size:17px;
+    font-size:16px;
     font-weight:600;
     line-height:1.3;
     color:var(--ink);
@@ -190,15 +188,113 @@
   }
   .week-badge{
     display:inline-block;
-    margin-top:8px;
+    margin-top:7px;
     font-size:9.5px;
     font-weight:700;
     letter-spacing:.06em;
     text-transform:uppercase;
     color:var(--rose);
     background:rgba(168,81,110,.10);
-    padding:3.5px 11px;
+    padding:3px 11px;
     border-radius:100px;
+  }
+
+  /* ============ GÜN SEKMELERİ ============ */
+  .day-tabs{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    gap:5px;
+    margin-bottom:16px;
+  }
+  .day-tab{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:3px;
+    min-height:54px;
+    padding:7px 2px;
+    border-radius:13px;
+    border:1px solid var(--line);
+    background:#fff;
+    cursor:pointer;
+    font:inherit;
+    color:var(--ink);
+    box-shadow:0 1px 4px rgba(124,58,80,.04);
+    transition:all .18s ease;
+    -webkit-tap-highlight-color:transparent;
+    touch-action:manipulation;
+    min-width:0;
+    overflow:hidden;
+  }
+  .day-tab .dn{
+    font-size:10.5px;
+    font-weight:700;
+    letter-spacing:.02em;
+    line-height:1;
+  }
+  .day-tab .dc{
+    font-size:9px;
+    font-weight:700;
+    min-width:16px;
+    padding:1px 5px;
+    border-radius:100px;
+    background:rgba(168,81,110,.09);
+    color:var(--rose-dark);
+    line-height:1.4;
+    text-align:center;
+  }
+  .day-tab.few .dc{
+    background:rgba(201,162,74,.20);
+    color:#8a6a20;
+  }
+  .day-tab.active{
+    background:linear-gradient(135deg,var(--rose),#c06080);
+    border-color:var(--rose);
+    box-shadow:0 5px 14px rgba(168,81,110,.28);
+    color:#fff;
+  }
+  .day-tab.active .dn{color:#fff}
+  .day-tab.active .dc{
+    background:rgba(255,255,255,.28);
+    color:#fff;
+  }
+  .day-tab:active{transform:scale(.95)}
+
+  /* ============ GÜN BAŞLIĞI ============ */
+  .day-header{
+    padding:0 4px;
+    margin-bottom:14px;
+  }
+  .dh-date{
+    font-family:'Playfair Display',Georgia,serif;
+    font-size:17px;
+    font-weight:600;
+    color:var(--ink);
+    line-height:1.25;
+    margin-bottom:3px;
+  }
+  .dh-today{
+    display:inline-block;
+    font-family:'Inter',sans-serif;
+    font-size:8.5px;
+    font-weight:700;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:#fff;
+    background:var(--rose);
+    padding:2.5px 8px;
+    border-radius:100px;
+    margin-left:6px;
+    vertical-align:middle;
+    position:relative;
+    top:-1px;
+  }
+  .dh-meta{
+    font-size:11.5px;
+    font-weight:500;
+    color:var(--muted);
+    letter-spacing:.01em;
   }
 
   /* ============ KART IZGARASI ============ */
@@ -219,7 +315,7 @@
 
   /* ============ KİŞİ KARTI ============ */
   @keyframes cardIn{
-    from{opacity:0;transform:translateY(12px) scale(.985)}
+    from{opacity:0;transform:translateY(10px) scale(.985)}
     to{opacity:1;transform:translateY(0) scale(1)}
   }
 
@@ -227,12 +323,11 @@
     position:relative;
     background:#fff;
     border-radius:20px;
-    padding:15px 15px 14px;
+    padding:14px 14px 13px;
     border:1px solid rgba(0,0,0,.045);
     box-shadow:0 3px 16px rgba(124,58,80,.06);
     overflow:hidden;
-    animation:cardIn .45s cubic-bezier(.22,.9,.3,1) backwards;
-    transition:transform .2s ease, box-shadow .2s ease;
+    animation:cardIn .42s cubic-bezier(.22,.9,.3,1) backwards;
   }
   .card::before{
     content:'';
@@ -257,22 +352,22 @@
     display:flex;
     align-items:center;
     gap:11px;
-    margin-bottom:13px;
+    margin-bottom:12px;
   }
   .avatar{
-    width:44px;height:44px;
+    width:42px;height:42px;
     flex:0 0 auto;
     display:grid;place-items:center;
-    border-radius:14px;
+    border-radius:13px;
     font-family:'Playfair Display',Georgia,serif;
-    font-size:20px;font-weight:600;
+    font-size:19px;font-weight:600;
     color:#fff;
     background:linear-gradient(135deg,var(--c),var(--c2));
-    box-shadow:0 5px 14px var(--soft);
+    box-shadow:0 4px 12px var(--soft);
   }
   .who{min-width:0;flex:1}
   .who h2{
-    font-size:15.5px;
+    font-size:15px;
     font-weight:600;
     letter-spacing:.01em;
     color:var(--ink);
@@ -283,7 +378,7 @@
   .cnt{
     flex:0 0 auto;
     min-width:26px;height:26px;
-    padding:0 6px;
+    padding:0 7px;
     display:grid;place-items:center;
     border-radius:100px;
     font-size:11.5px;
@@ -297,27 +392,27 @@
     list-style:none;
     display:flex;
     flex-direction:column;
-    gap:8px;
+    gap:6px;
   }
   .task{
     display:flex;
     align-items:center;
-    gap:10px;
-    padding:9px 10px;
-    border-radius:13px;
+    gap:9px;
+    padding:8px 9px;
+    border-radius:12px;
     background:#fdfaf9;
     border:1px solid rgba(168,81,110,.07);
-    font-size:12.8px;
+    font-size:12.5px;
     line-height:1.3;
     color:var(--ink-soft);
     font-weight:500;
   }
   .ico{
-    width:28px;height:28px;
+    width:26px;height:26px;
     flex:0 0 auto;
     display:grid;place-items:center;
-    border-radius:9px;
-    font-size:14px;
+    border-radius:8px;
+    font-size:13px;
     background:var(--soft);
     line-height:1;
   }
@@ -326,12 +421,35 @@
     word-break:break-word;
   }
 
+  /* ============ İZİNLİ NOTU ============ */
+  .off-note{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    flex-wrap:wrap;
+    margin-top:16px;
+    padding:11px 14px;
+    border-radius:14px;
+    background:rgba(201,162,74,.08);
+    border:1px solid rgba(201,162,74,.18);
+    font-size:11.5px;
+    line-height:1.4;
+    color:#6b5a2e;
+    font-weight:500;
+  }
+  .off-note .off-icon{font-size:13px}
+  .off-note b{color:#5a4a20;font-weight:700}
+  .off-note .off-sep{opacity:.5;margin:0 2px}
+  .off-note .off-sub{color:#8a6a20}
+  .off-note.hidden{display:none}
+
+  /* ============ ALT ============ */
   .foot{
     text-align:center;
     font-size:10.5px;
     line-height:1.7;
     color:var(--muted);
-    margin:22px 0 0;
+    margin:20px 0 0;
     padding:0 12px;
   }
 
@@ -339,17 +457,21 @@
   @media(max-width:360px){
     .wrap{padding:14px 11px 0}
     .brand b{font-size:18px}
-    .week-dates{font-size:15px}
-    .week-panel{padding:14px 8px}
-    .nav-btn{width:42px;height:42px;border-radius:14px}
-    .avatar{width:40px;height:40px;font-size:18px;border-radius:12px}
-    .task{font-size:12.2px;padding:8px 9px}
-    .ico{width:26px;height:26px;font-size:13px}
+    .week-dates{font-size:14.5px}
+    .week-panel{padding:13px 8px}
+    .nav-btn{width:40px;height:40px;border-radius:13px}
+    .avatar{width:38px;height:38px;font-size:17px;border-radius:12px}
+    .task{font-size:11.8px;padding:7px 8px}
+    .ico{width:24px;height:24px;font-size:12px}
+    .day-tab{min-height:50px;padding:6px 1px;border-radius:11px}
+    .day-tab .dn{font-size:9.5px}
+    .day-tab .dc{font-size:8.5px;padding:1px 4px}
+    .dh-date{font-size:15.5px}
   }
 
   /* ============ YATAY TELEFON ============ */
   @media(max-height:480px) and (orientation:landscape){
-    .week-panel{padding:10px 12px;margin-bottom:14px}
+    .week-panel{padding:10px 12px;margin-bottom:12px}
     .eyebrow{display:none}
     .week-badge{margin-top:5px}
     .week-dates{font-size:15px}
@@ -358,14 +480,13 @@
 </head>
 <body>
 
-<!-- ÜST BAR -->
 <header class="topbar">
   <div class="topbar-inner">
     <div class="brand">
       <b>ASH</b>
       <small>KUAFÖR</small>
     </div>
-    <button class="today-btn hide" id="todayBtn">Bu Hafta</button>
+    <button class="today-btn hide" id="todayBtn">Bugüne Dön</button>
   </div>
 </header>
 
@@ -379,7 +500,7 @@
     </button>
 
     <div class="week-meta">
-      <div class="eyebrow">Haftalık Görev Programı</div>
+      <div class="eyebrow">Haftalık Program</div>
       <div class="week-dates" id="dates">—</div>
       <div class="week-badge" id="badge">Bu Hafta</div>
     </div>
@@ -390,10 +511,19 @@
     </button>
   </section>
 
+  <!-- GÜN SEKMELERİ -->
+  <nav class="day-tabs" id="dayTabs" aria-label="Gün seçici"></nav>
+
+  <!-- GÜN BAŞLIĞI -->
+  <div class="day-header" id="dayHeader"></div>
+
   <!-- KARTLAR -->
   <main class="grid" id="grid"></main>
 
-  <p class="foot">Her çırak haftada 2 görev yapar · Program her hafta otomatik yenilenir</p>
+  <!-- İZİNLİ NOTU -->
+  <p class="off-note hidden" id="offNote"></p>
+
+  <p class="foot">Görevler her gün o gün çalışan çıraklar arasında eşit dağıtılır · Her hafta otomatik yenilenir</p>
 
 </div>
 
@@ -413,7 +543,19 @@ const PEOPLE = [
   { name:'Zeynep',  c:'#a85252', c2:'#c87272', soft:'rgba(184,92,92,.13)' }
 ];
 
-/* Görev listesi (kesim arabası hariç — o Tahan'a sabit) */
+/* İzin günleri: 0=Pzt, 1=Sal, 2=Çar, 3=Per, 4=Cum, 5=Cmt, 6=Paz */
+const OFF_DAYS = {
+  'Tahan':   [1, 4],   // Salı, Cuma
+  'Ezel':    [3, 4],   // Perşembe, Cuma
+  'Müberra': [3, 4],   // Perşembe, Cuma
+  'Irmak':   [3, 4],   // Perşembe, Cuma
+  'Zeynep':  [0, 4],   // Pazartesi, Cuma
+  'Hira':    [3, 4],   // Perşembe, Cuma
+  'Sofia':   [3, 4],   // Perşembe, Cuma
+  'Rahman':  [1]       // Salı
+};
+
+/* Kesim arabası hariç dönen görevler */
 const TASKS = [
   'Yer Silme',
   'Yer Süpürme',
@@ -432,7 +574,6 @@ const TASKS = [
   'Fön Makineleri'
 ];
 
-/* Görev ikonları */
 const ICONS = {
   'Yer Silme':'🧽',
   'Yer Süpürme':'🧹',
@@ -454,8 +595,9 @@ const ICONS = {
 
 const FIXED_TASK  = 'Kesim Arabası Temizliği';
 const FIXED_OWNER = 'Tahan';
-const CYCLE       = TASKS.length;              // 15 haftada bir başa döner
-const BASE_MONDAY = new Date(2024, 0, 1);      // Referans Pazartesi
+const BASE_MONDAY = new Date(2024, 0, 1);
+
+const DAY_SHORT = ['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'];
 
 /* =========================================================
    2) YARDIMCI FONKSİYONLAR
@@ -466,7 +608,7 @@ const mod = (n, m) => ((n % m) + m) % m;
 
 function startOfWeek(d){
   const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  const day = (x.getDay() + 6) % 7;   // Pazartesi = 0
+  const day = (x.getDay() + 6) % 7;
   x.setDate(x.getDate() - day);
   return x;
 }
@@ -481,47 +623,93 @@ function fmtRange(a, b){
 
 const THIS_MONDAY = startOfWeek(new Date());
 const AUTO_INDEX  = Math.round((THIS_MONDAY - BASE_MONDAY) / 604800000);
+const TODAY_IDX   = (new Date().getDay() + 6) % 7;
+
+/* O gün çalışan kişi sayısı (haftadan bağımsız, sabit) */
+const WORKERS_PER_DAY = [];
+for (let d = 0; d < 7; d++){
+  WORKERS_PER_DAY[d] = PEOPLE.filter(p => !OFF_DAYS[p.name].includes(d)).length;
+}
 
 /* =========================================================
-   3) HAFTALIK PLAN
-   - Tahan: Kesim Arabası (sabit) + 1 dönen görev
-   - Diğer 7 çırak: kalan 14 görevi 2'şer paylaşır
+   3) GÜNLÜK PLAN ÜRETİCİ
+   Her gün, o gün çalışan çıraklar arasında görevler
+   mümkün olduğunca eşit şekilde paylaştırılır.
+   Tahan çalışıyorsa Kesim Arabası ona aittir.
    ========================================================= */
 
-function buildPlan(idx){
-  const plan = {};
-  PEOPLE.forEach(p => plan[p.name] = []);
+function buildDayPlan(weekIdx, dayIdx){
+  const workers = PEOPLE.filter(p => !OFF_DAYS[p.name].includes(dayIdx));
+  const n = workers.length;
+  const hasTahan = workers.some(p => p.name === FIXED_OWNER);
+  const totalTasks = TASKS.length + (hasTahan ? 1 : 0);
 
-  plan[FIXED_OWNER].push(FIXED_TASK);
-  plan[FIXED_OWNER].push(TASKS[idx % CYCLE]);
+  const base  = Math.floor(totalTasks / n);
+  const extra = totalTasks % n;   // kaç kişi birer fazla görev alacak
 
-  const rest = [];
-  for (let k = 1; k < CYCLE; k++){
-    rest.push(TASKS[(idx + k) % CYCLE]);
+  const poolSeed  = weekIdx * 7 + dayIdx;
+  const rotSeed   = weekIdx * 13 + dayIdx * 5 + 1;
+  const extraStart = mod(rotSeed, n);
+  const orderStart = mod(rotSeed + Math.floor(n / 2), n);
+
+  /* Fazladan görev alacak kişileri belirle */
+  const extraSet = new Set();
+  for (let i = 0; i < extra; i++){
+    extraSet.add(mod(extraStart + i, n));
   }
 
-  const others = PEOPLE.filter(p => p.name !== FIXED_OWNER);
-  others.forEach((p, i) => {
-    plan[p.name].push(rest[2 * i]);
-    plan[p.name].push(rest[2 * i + 1]);
+  const targetCount = {};
+  workers.forEach((w, i) => {
+    targetCount[w.name] = base + (extraSet.has(i) ? 1 : 0);
   });
 
-  return plan;
+  /* Görev havuzu — her hafta/gün farklı sırayla */
+  const pool = [];
+  for (let k = 0; k < TASKS.length; k++){
+    pool.push(TASKS[mod(poolSeed + k, TASKS.length)]);
+  }
+
+  const plan = {};
+  workers.forEach(p => plan[p.name] = []);
+
+  /* Tahan'a Kesim Arabası */
+  if (hasTahan){
+    plan[FIXED_OWNER].push(FIXED_TASK);
+    targetCount[FIXED_OWNER] -= 1;
+  }
+
+  /* Havuzdaki görevleri sırayla dağıt */
+  let pIdx = 0;
+  for (let i = 0; i < n; i++){
+    const w = workers[mod(orderStart + i, n)];
+    const count = targetCount[w.name];
+    for (let c = 0; c < count; c++){
+      if (pIdx < pool.length){
+        plan[w.name].push(pool[pIdx++]);
+      }
+    }
+  }
+
+  return { workers, plan, totalTasks };
 }
 
 /* =========================================================
    4) DURUM
    ========================================================= */
 
-let offset = 0;
+let offset    = 0;
+let activeDay = TODAY_IDX;
 
 /* =========================================================
    5) ÇİZİM
    ========================================================= */
 
 const $grid     = document.getElementById('grid');
+const $days     = document.getElementById('dayTabs');
 const $dates    = document.getElementById('dates');
 const $badge    = document.getElementById('badge');
+const $header   = document.getElementById('dayHeader');
+const $offNote  = document.getElementById('offNote');
 const $todayBtn = document.getElementById('todayBtn');
 
 function currentMonday(){
@@ -530,13 +718,58 @@ function currentMonday(){
   return m;
 }
 
-function renderCards(monday){
-  const idx  = mod(AUTO_INDEX + offset, CYCLE);
-  const plan = buildPlan(idx);
+/* --- Gün sekmeleri --- */
+function renderDayTabs(){
+  $days.innerHTML = '';
 
+  for (let d = 0; d < 7; d++){
+    const count = WORKERS_PER_DAY[d];
+
+    const btn = document.createElement('button');
+    btn.className = 'day-tab';
+    if (d === activeDay) btn.classList.add('active');
+    if (count <= 3) btn.classList.add('few');
+
+    const dn = document.createElement('span');
+    dn.className = 'dn';
+    dn.textContent = DAY_SHORT[d];
+
+    const dc = document.createElement('span');
+    dc.className = 'dc';
+    dc.textContent = count;
+
+    btn.append(dn, dc);
+
+    btn.addEventListener('click', () => {
+      activeDay = d;
+      render();
+    });
+
+    $days.appendChild(btn);
+  }
+}
+
+/* --- O günün kartları --- */
+function renderCards(monday){
+  const { workers, plan, totalTasks } = buildDayPlan(AUTO_INDEX + offset, activeDay);
+
+  /* Gün başlığı */
+  const dayDate = new Date(monday);
+  dayDate.setDate(dayDate.getDate() + activeDay);
+  const dateStr = dayDate.toLocaleDateString('tr-TR', {
+    weekday: 'long', day: 'numeric', month: 'long'
+  });
+
+  const isToday = offset === 0 && activeDay === TODAY_IDX;
+  $header.innerHTML = `
+    <div class="dh-date">${dateStr}${isToday ? '<span class="dh-today">Bugün</span>' : ''}</div>
+    <div class="dh-meta">${workers.length} çırak · ${totalTasks} görev</div>
+  `;
+
+  /* Kartlar */
   $grid.innerHTML = '';
 
-  PEOPLE.forEach((person, i) => {
+  workers.forEach((person, i) => {
     const tasks = plan[person.name];
 
     const card = document.createElement('article');
@@ -588,8 +821,28 @@ function renderCards(monday){
     card.append(head, ul);
     $grid.appendChild(card);
   });
+
+  /* İzinli notu */
+  const offPeople = PEOPLE.filter(p => OFF_DAYS[p.name].includes(activeDay));
+
+  if (offPeople.length === 0){
+    $offNote.classList.add('hidden');
+    $offNote.innerHTML = '';
+  } else {
+    $offNote.classList.remove('hidden');
+
+    const names = offPeople.map(p => p.name).join(', ');
+    let html = `<span class="off-icon">🌙</span><span>İzinli: <b>${names}</b></span>`;
+
+    if (offPeople.some(p => p.name === FIXED_OWNER)){
+      html += `<span class="off-sep">·</span><span class="off-sub">Kesim Arabası bugün yapılmıyor</span>`;
+    }
+
+    $offNote.innerHTML = html;
+  }
 }
 
+/* --- Tam çizim --- */
 function render(){
   const monday = currentMonday();
   const sunday = new Date(monday);
@@ -603,8 +856,9 @@ function render(){
     offset === -1 ? 'Geçen Hafta' :
     offset > 0    ? `${offset} Hafta Sonra` : `${-offset} Hafta Önce`;
 
-  $todayBtn.classList.toggle('hide', offset === 0);
+  $todayBtn.classList.toggle('hide', offset === 0 && activeDay === TODAY_IDX);
 
+  renderDayTabs();
   renderCards(monday);
 }
 
@@ -612,17 +866,21 @@ function render(){
    6) OLAYLAR
    ========================================================= */
 
-function goPrev(){ offset -= 1; render(); }
-function goNext(){ offset += 1; render(); }
+function goPrevWeek(){ offset -= 1; render(); }
+function goNextWeek(){ offset += 1; render(); }
+function goPrevDay(){ if (activeDay > 0){ activeDay -= 1; render(); } }
+function goNextDay(){ if (activeDay < 6){ activeDay += 1; render(); } }
 
-document.getElementById('prev').addEventListener('click', goPrev);
-document.getElementById('next').addEventListener('click', goNext);
+document.getElementById('prev').addEventListener('click', goPrevWeek);
+document.getElementById('next').addEventListener('click', goNextWeek);
 
 $todayBtn.addEventListener('click', () => {
-  if (offset !== 0){ offset = 0; render(); }
+  offset = 0;
+  activeDay = TODAY_IDX;
+  render();
 });
 
-/* --- Mobil: sağa/sola kaydırarak hafta değiştir --- */
+/* --- Kaydırma: kartlar üzerinde sağa/sola = gün değiştir --- */
 let tX = 0, tY = 0, tTime = 0;
 
 $grid.addEventListener('touchstart', e => {
@@ -639,14 +897,14 @@ $grid.addEventListener('touchend', e => {
   const dt = Date.now() - tTime;
 
   if (dt < 600 && Math.abs(dx) > 65 && Math.abs(dy) < 55){
-    if (dx < 0) goNext(); else goPrev();
+    if (dx < 0) goNextDay(); else goPrevDay();
   }
 }, { passive:true });
 
-/* --- Klavye okları (masaüstü) --- */
+/* --- Klavye okları --- */
 document.addEventListener('keydown', e => {
-  if (e.key === 'ArrowLeft')  goPrev();
-  if (e.key === 'ArrowRight') goNext();
+  if (e.key === 'ArrowLeft')  goPrevDay();
+  if (e.key === 'ArrowRight') goNextDay();
 });
 
 /* Başlat */
