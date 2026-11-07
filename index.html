@@ -589,7 +589,7 @@ const OFF_DAYS = {
   'Sofia':   [3, 4]    // Perşembe, Cuma
 };
 
-/* Kesim arabası hariç dönen görevler */
+/* Kesim arabası hariç dönen görevler (yeni görevler eklendi) */
 const TASKS = [
   'Yer Silme',
   'Yer Süpürme',
@@ -605,7 +605,11 @@ const TASKS = [
   'Çöpler',
   'Makyaj Bölümü',
   'Koltuklar',
-  'Fön Makineleri'
+  'Fön Makineleri',
+  'Fırçalar',
+  'Manikür Alanı',
+  'Tente',
+  "Semih Bey'in Odası"
 ];
 
 const ICONS = {
@@ -624,6 +628,10 @@ const ICONS = {
   'Makyaj Bölümü':'💄',
   'Koltuklar':'🛋️',
   'Fön Makineleri':'💨',
+  'Fırçalar':'🖌️',
+  'Manikür Alanı':'💅',
+  'Tente':'⛱️',
+  "Semih Bey'in Odası":'🚪',
   'Kesim Arabası Temizliği':'✂️'
 };
 
@@ -813,7 +821,7 @@ function renderCards(monday){
     <div class="dh-meta">${meta}</div>
   `;
 
-  /* Boş gün (normalde olmaz) */
+  /* Boş gün */
   if (workers.length === 0){
     $grid.innerHTML = `
       <div class="empty-day">
