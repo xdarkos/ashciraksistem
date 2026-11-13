@@ -382,6 +382,14 @@
     overflow:hidden;
     text-overflow:ellipsis;
   }
+  .who .wk{
+    display:block;
+    font-size:10px;
+    font-weight:500;
+    color:var(--muted);
+    margin-top:2px;
+    letter-spacing:.01em;
+  }
   .cnt{
     flex:0 0 auto;
     min-width:26px;height:26px;
@@ -426,6 +434,15 @@
   .task span:last-child{
     min-width:0;
     word-break:break-word;
+  }
+  .task.empty{
+    background:transparent;
+    border-style:dashed;
+    border-color:rgba(168,81,110,.16);
+    color:var(--muted);
+    font-style:italic;
+    font-weight:400;
+    justify-content:center;
   }
 
   /* ============ BOŞ GÜN ============ */
@@ -559,7 +576,7 @@
   <!-- İZİNLİ NOTU -->
   <p class="off-note hidden" id="offNote"></p>
 
-  <p class="foot">Cuma günleri sırayla bir çırak nöbetçi olur · Diğer günler izinlere göre eşit dağıtılır</p>
+  <p class="foot">Haftalık toplam görevler herkeste eşitlenir · Aynı görev üst üste aynı kişiye gelmez</p>
 
 </div>
 
@@ -589,7 +606,13 @@ const OFF_DAYS = {
   'Sofia':   [3, 4]    // Perşembe, Cuma
 };
 
-/* Kesim arabası hariç dönen görevler (yeni görevler eklendi) */
+/* Belirli bir hafta için özel izin durumları
+   (haftanın Pazartesi tarihi -> kişi -> izin günleri) */
+const WEEK_OVERRIDES = {
+  '2026-11-09': { 'Tahan': [1, 4, 5] }   // 9–15 Kasım 2026: Cumartesi izinli, Pazar çalışıyor
+};
+
+/* Görevler (kesim arabası hariç) */
 const TASKS = [
   'Yer Silme',
   'Yer Süpürme',
@@ -637,7 +660,7 @@ const ICONS = {
 
 const FIXED_TASK  = 'Kesim Arabası Temizliği';
 const FIXED_OWNER = 'Tahan';
-const BASE_MONDAY = new Date(2024, 0, 1);
+const BASE_MONDAY = new Date(2024, 0, 1);   // Pazartesi
 
 const DAY_SHORT = ['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'];
 
@@ -663,90 +686,258 @@ function fmtRange(a, b){
   return ya === yb ? `${sa} – ${sb} ${ya}` : `${sa} ${ya} – ${sb} ${yb}`;
 }
 
+function mondayOfWeek(weekIdx){
+  const d = new Date(BASE_MONDAY);
+  d.setDate(d.getDate() + weekIdx * 7);
+  return d;
+}
+
+function isoDate(d){
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+/* Deterministik karıştırma */
+function mulberry32(a){
+  return function(){
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function shuffleArr(arr, seed){
+  const rand = mulberry32(seed);
+  for (let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(rand() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
 const THIS_MONDAY = startOfWeek(new Date());
 const AUTO_INDEX  = Math.round((THIS_MONDAY - BASE_MONDAY) / 604800000);
 const TODAY_IDX   = (new Date().getDay() + 6) % 7;
 
 /* =========================================================
-   3) GÜNLÜK ÇALIŞANLAR
-   Cuma (4) hariç: izin listesine göre
-   Cuma: haftalık rotasyonla tek kişi
+   3) GÜNLÜK ÇALIŞANLAR (izin + hafta istisnası)
    ========================================================= */
+
+function offDaysFor(name, weekIdx){
+  const key = isoDate(mondayOfWeek(weekIdx));
+  const ov = WEEK_OVERRIDES[key];
+  if (ov && ov[name]) return ov[name];
+  return OFF_DAYS[name] || [];
+}
 
 function getWorkers(dayIdx, weekIdx){
   if (dayIdx === 4){
-    return [ PEOPLE[ mod(weekIdx, PEOPLE.length) ] ];
+    // Cuma: haftalık rotasyonla tek kişi
+    return [ PEOPLE[mod(weekIdx, PEOPLE.length)] ];
   }
-  return PEOPLE.filter(p => !OFF_DAYS[p.name].includes(dayIdx));
+  return PEOPLE.filter(p => !offDaysFor(p.name, weekIdx).includes(dayIdx));
 }
 
 /* =========================================================
-   4) GÜNLÜK PLAN ÜRETİCİ
+   4) HAFTALIK DENGE İÇİN SAYI DAĞITIMI
+   Her günün görevleri, o gün çalışanların KALAN haftalık
+   kapasitesine göre paylaştırılır.
    ========================================================= */
 
-function buildDayPlan(weekIdx, dayIdx){
-  const workers = getWorkers(dayIdx, weekIdx);
-  const n = workers.length;
+function allocate(total, workers, remaining){
+  const res = {};
+  workers.forEach(w => res[w.name] = 0);
+  let left = total;
+  if (left <= 0 || workers.length === 0) return res;
 
-  if (n === 0){
-    return { workers: [], plan: {}, totalTasks: 0, empty: true };
-  }
+  const caps = workers.map(w => Math.max(0, remaining[w.name] || 0));
+  const sumCaps = caps.reduce((a, b) => a + b, 0);
 
-  const hasTahan = workers.some(p => p.name === FIXED_OWNER);
-  const totalTasks = TASKS.length + (hasTahan ? 1 : 0);
+  if (sumCaps > 0){
+    const items = workers.map((w, i) => {
+      const exact = Math.min(caps[i], left * caps[i] / sumCaps);
+      const fl = Math.floor(exact);
+      return { name: w.name, fl, frac: exact - fl, capLeft: caps[i] - fl };
+    });
 
-  const base  = Math.floor(totalTasks / n);
-  const extra = totalTasks % n;
+    let assigned = 0;
+    items.forEach(it => { res[it.name] = it.fl; assigned += it.fl; });
+    left -= assigned;
 
-  const rotSeed    = weekIdx * 13 + dayIdx * 5 + 1;
-  const extraStart = mod(rotSeed, n);
-  const orderStart = mod(rotSeed + Math.floor(n / 2), n);
-
-  const extraSet = new Set();
-  for (let i = 0; i < extra; i++) extraSet.add(mod(extraStart + i, n));
-
-  const targetCount = {};
-  workers.forEach((w, i) => {
-    targetCount[w.name] = base + (extraSet.has(i) ? 1 : 0);
-  });
-
-  const poolSeed = weekIdx * 7 + dayIdx;
-  const pool = [];
-  for (let k = 0; k < TASKS.length; k++){
-    pool.push(TASKS[mod(poolSeed + k, TASKS.length)]);
-  }
-
-  const plan = {};
-  workers.forEach(p => plan[p.name] = []);
-
-  if (hasTahan){
-    plan[FIXED_OWNER].push(FIXED_TASK);
-    targetCount[FIXED_OWNER] -= 1;
-  }
-
-  let pIdx = 0;
-  for (let i = 0; i < n; i++){
-    const w = workers[mod(orderStart + i, n)];
-    const count = targetCount[w.name];
-    for (let c = 0; c < count; c++){
-      if (pIdx < pool.length){
-        plan[w.name].push(pool[pIdx++]);
+    items.sort((a, b) => b.frac - a.frac);
+    let progressed = true;
+    while (left > 0 && progressed){
+      progressed = false;
+      for (const it of items){
+        if (left <= 0) break;
+        if (it.capLeft > 0){
+          res[it.name] += 1;
+          it.capLeft -= 1;
+          left -= 1;
+          progressed = true;
+        }
       }
     }
   }
 
-  return { workers, plan, totalTasks };
+  // Kapasite yetmediyse eşit dağıt
+  if (left > 0){
+    let i = 0;
+    while (left > 0){
+      res[workers[i % workers.length].name] += 1;
+      left -= 1;
+      i++;
+    }
+  }
+
+  return res;
 }
 
 /* =========================================================
-   5) DURUM
+   5) GÜN İÇİN GÖREV ATAMASI (tekrar önleyici)
+   ========================================================= */
+
+function assignTasksForDay(weekIdx, dayIdx, day, counts, hist){
+  const assign = {};
+  day.workers.forEach(w => assign[w.name] = []);
+
+  if (day.hasTahan){
+    assign[FIXED_OWNER].push(FIXED_TASK);
+  }
+
+  const need = {};
+  day.workers.forEach(w => {
+    need[w.name] = counts[w.name] || 0;
+    if (w.name === FIXED_OWNER && day.hasTahan) need[w.name] -= 1;
+  });
+
+  const pool = shuffleArr(TASKS.slice(), (weekIdx + 10000) * 997 + dayIdx * 31 + 7);
+  const rot  = mod(weekIdx + dayIdx, Math.max(1, day.workers.length));
+
+  pool.forEach(task => {
+    const avail = day.workers.filter(w => need[w.name] > 0);
+    if (!avail.length) return;
+
+    const pref = avail.filter(w => !(hist[w.name] && hist[w.name].has(task)));
+    const cands = pref.length ? pref : avail;
+
+    let best = cands[0];
+    for (const w of cands){
+      if (need[w.name] > need[best.name]){
+        best = w;
+      } else if (need[w.name] === need[best.name]){
+        const iw = mod(day.workers.indexOf(w) - rot, day.workers.length);
+        const ib = mod(day.workers.indexOf(best) - rot, day.workers.length);
+        if (iw < ib) best = w;
+      }
+    }
+
+    assign[best.name].push(task);
+    need[best.name] -= 1;
+  });
+
+  // Görünüm için sırala
+  day.workers.forEach(w => {
+    assign[w.name].sort((a, b) => {
+      if (a === FIXED_TASK) return -1;
+      if (b === FIXED_TASK) return 1;
+      return TASKS.indexOf(a) - TASKS.indexOf(b);
+    });
+  });
+
+  return assign;
+}
+
+/* =========================================================
+   6) HAFTALIK PLAN
+   ========================================================= */
+
+function computeWeekPlan(weekIdx, depth){
+  const days = [];
+  for (let d = 0; d < 7; d++){
+    const workers = getWorkers(d, weekIdx);
+    const hasTahan = workers.some(w => w.name === FIXED_OWNER);
+    const slots = workers.length ? (TASKS.length + (hasTahan ? 1 : 0)) : 0;
+    days.push({ dayIdx: d, workers, hasTahan, slots });
+  }
+
+  const totalSlots = days.reduce((s, x) => s + x.slots, 0);
+  const N = PEOPLE.length;
+  const baseT = Math.floor(totalSlots / N);
+  const rem = totalSlots % N;
+  const rot = mod(weekIdx * 3, N);
+
+  const targets = {};
+  PEOPLE.forEach((p, i) => {
+    targets[p.name] = baseT + (mod(i - rot, N) < rem ? 1 : 0);
+  });
+
+  // En kısıtlı günler önce (az çalışanlı)
+  const order = days
+    .map((x, i) => i)
+    .filter(i => days[i].workers.length > 0)
+    .sort((a, b) => days[a].workers.length - days[b].workers.length || a - b);
+
+  const countsPerDay = days.map(() => ({}));
+  const remaining = { ...targets };
+
+  for (const d of order){
+    const day = days[d];
+    let total = day.slots;
+
+    if (day.hasTahan){
+      countsPerDay[d][FIXED_OWNER] = 1;
+      remaining[FIXED_OWNER] -= 1;
+      total -= 1;
+    }
+
+    const alloc = allocate(total, day.workers, remaining);
+
+    day.workers.forEach(w => {
+      countsPerDay[d][w.name] = (countsPerDay[d][w.name] || 0) + alloc[w.name];
+      remaining[w.name] -= alloc[w.name];
+    });
+  }
+
+  // Önceki haftanın aynı günü (tekrar önleme)
+  let prevPlan = null;
+  if (depth > 0){
+    prevPlan = computeWeekPlan(weekIdx - 1, depth - 1);
+  }
+
+  return days.map((day, d) => {
+    const hist = {};
+    if (prevPlan){
+      const pd = prevPlan[d];
+      if (pd){
+        Object.entries(pd.assign).forEach(([name, tasks]) => {
+          hist[name] = new Set(tasks);
+        });
+      }
+    }
+    const assign = assignTasksForDay(weekIdx, d, day, countsPerDay[d], hist);
+    return { ...day, assign, counts: countsPerDay[d] };
+  });
+}
+
+/* Önbellek */
+let cacheIdx = null;
+let cachePlan = null;
+function getWeekPlan(weekIdx){
+  if (cacheIdx === weekIdx && cachePlan) return cachePlan;
+  cachePlan = computeWeekPlan(weekIdx, 1);
+  cacheIdx = weekIdx;
+  return cachePlan;
+}
+
+/* =========================================================
+   7) DURUM
    ========================================================= */
 
 let offset    = 0;
 let activeDay = TODAY_IDX;
 
 /* =========================================================
-   6) ÇİZİM
+   8) ÇİZİM
    ========================================================= */
 
 const $grid     = document.getElementById('grid');
@@ -763,18 +954,15 @@ function currentMonday(){
   return m;
 }
 
-/* --- Gün sekmeleri --- */
-function renderDayTabs(){
-  const weekIdx = AUTO_INDEX + offset;
+function renderDayTabs(weekPlan){
   $days.innerHTML = '';
 
   for (let d = 0; d < 7; d++){
-    const count = getWorkers(d, weekIdx).length;
+    const count = weekPlan[d].workers.length;
 
     const btn = document.createElement('button');
     btn.className = 'day-tab';
     if (d === activeDay) btn.classList.add('active');
-
     if (count === 0) btn.classList.add('zero');
     else if (count <= 3) btn.classList.add('few');
 
@@ -787,20 +975,25 @@ function renderDayTabs(){
     dc.textContent = count;
 
     btn.append(dn, dc);
-
-    btn.addEventListener('click', () => {
-      activeDay = d;
-      render();
-    });
+    btn.addEventListener('click', () => { activeDay = d; render(); });
 
     $days.appendChild(btn);
   }
 }
 
-/* --- O günün kartları --- */
 function renderCards(monday){
-  const weekIdx = AUTO_INDEX + offset;
-  const { workers, plan, totalTasks } = buildDayPlan(weekIdx, activeDay);
+  const weekIdx  = AUTO_INDEX + offset;
+  const weekPlan = getWeekPlan(weekIdx);
+  const dayPlan  = weekPlan[activeDay];
+
+  /* Haftalık toplamlar */
+  const weekTotals = {};
+  PEOPLE.forEach(p => weekTotals[p.name] = 0);
+  weekPlan.forEach(dp => {
+    Object.entries(dp.assign).forEach(([name, tasks]) => {
+      weekTotals[name] = (weekTotals[name] || 0) + tasks.length;
+    });
+  });
 
   /* Gün başlığı */
   const dayDate = new Date(monday);
@@ -808,13 +1001,12 @@ function renderCards(monday){
   const dateStr = dayDate.toLocaleDateString('tr-TR', {
     weekday: 'long', day: 'numeric', month: 'long'
   });
-
   const isToday = offset === 0 && activeDay === TODAY_IDX;
 
   let meta;
-  if (workers.length === 0) meta = 'Tüm çıraklar izinli';
-  else if (activeDay === 4) meta = `Cuma nöbetçisi · ${totalTasks} görev`;
-  else meta = `${workers.length} çırak · ${totalTasks} görev`;
+  if (dayPlan.workers.length === 0) meta = 'Tüm çıraklar izinli';
+  else if (activeDay === 4) meta = `Cuma nöbetçisi · ${dayPlan.slots} görev`;
+  else meta = `${dayPlan.workers.length} çırak · ${dayPlan.slots} görev`;
 
   $header.innerHTML = `
     <div class="dh-date">${dateStr}${isToday ? '<span class="dh-today">Bugün</span>' : ''}</div>
@@ -822,7 +1014,7 @@ function renderCards(monday){
   `;
 
   /* Boş gün */
-  if (workers.length === 0){
+  if (dayPlan.workers.length === 0){
     $grid.innerHTML = `
       <div class="empty-day">
         <div class="empty-ico">🌸</div>
@@ -838,8 +1030,8 @@ function renderCards(monday){
   /* Kartlar */
   $grid.innerHTML = '';
 
-  workers.forEach((person, i) => {
-    const tasks = plan[person.name];
+  dayPlan.workers.forEach((person, i) => {
+    const tasks = dayPlan.assign[person.name] || [];
 
     const card = document.createElement('article');
     card.className = 'card';
@@ -859,7 +1051,10 @@ function renderCards(monday){
     who.className = 'who';
     const h2 = document.createElement('h2');
     h2.textContent = person.name;
-    who.appendChild(h2);
+    const wk = document.createElement('span');
+    wk.className = 'wk';
+    wk.textContent = `Haftalık ${weekTotals[person.name]} görev`;
+    who.append(h2, wk);
 
     const cnt = document.createElement('div');
     cnt.className = 'cnt';
@@ -870,20 +1065,27 @@ function renderCards(monday){
     const ul = document.createElement('ul');
     ul.className = 'tasks';
 
-    tasks.forEach(task => {
+    if (tasks.length === 0){
       const li = document.createElement('li');
-      li.className = 'task';
-
-      const ic = document.createElement('span');
-      ic.className = 'ico';
-      ic.textContent = ICONS[task] || '•';
-
-      const tx = document.createElement('span');
-      tx.textContent = task;
-
-      li.append(ic, tx);
+      li.className = 'task empty';
+      li.textContent = 'Bugün görev yok';
       ul.appendChild(li);
-    });
+    } else {
+      tasks.forEach(task => {
+        const li = document.createElement('li');
+        li.className = 'task';
+
+        const ic = document.createElement('span');
+        ic.className = 'ico';
+        ic.textContent = ICONS[task] || '•';
+
+        const tx = document.createElement('span');
+        tx.textContent = task;
+
+        li.append(ic, tx);
+        ul.appendChild(li);
+      });
+    }
 
     card.append(head, ul);
     $grid.appendChild(card);
@@ -891,7 +1093,7 @@ function renderCards(monday){
 
   /* İzinli notu */
   if (activeDay === 4){
-    const worker = workers[0];
+    const worker = dayPlan.workers[0];
     $offNote.classList.remove('hidden');
     $offNote.innerHTML =
       `<span class="off-icon">🌟</span><span>Cuma nöbetçisi: <b>${worker.name}</b></span>` +
@@ -899,7 +1101,7 @@ function renderCards(monday){
     return;
   }
 
-  const offPeople = PEOPLE.filter(p => OFF_DAYS[p.name].includes(activeDay));
+  const offPeople = PEOPLE.filter(p => offDaysFor(p.name, weekIdx).includes(activeDay));
 
   if (offPeople.length === 0){
     $offNote.classList.add('hidden');
@@ -918,7 +1120,6 @@ function renderCards(monday){
   }
 }
 
-/* --- Tam çizim --- */
 function render(){
   const monday = currentMonday();
   const sunday = new Date(monday);
@@ -934,12 +1135,12 @@ function render(){
 
   $todayBtn.classList.toggle('hide', offset === 0 && activeDay === TODAY_IDX);
 
-  renderDayTabs();
+  renderDayTabs(getWeekPlan(AUTO_INDEX + offset));
   renderCards(monday);
 }
 
 /* =========================================================
-   7) OLAYLAR
+   9) OLAYLAR
    ========================================================= */
 
 function goPrevWeek(){ offset -= 1; render(); }
@@ -956,7 +1157,6 @@ $todayBtn.addEventListener('click', () => {
   render();
 });
 
-/* --- Kaydırma: kartlar üzerinde sağa/sola = gün değiştir --- */
 let tX = 0, tY = 0, tTime = 0;
 
 $grid.addEventListener('touchstart', e => {
@@ -977,13 +1177,11 @@ $grid.addEventListener('touchend', e => {
   }
 }, { passive:true });
 
-/* --- Klavye okları --- */
 document.addEventListener('keydown', e => {
   if (e.key === 'ArrowLeft')  goPrevDay();
   if (e.key === 'ArrowRight') goNextDay();
 });
 
-/* Başlat */
 render();
 </script>
 </body>
