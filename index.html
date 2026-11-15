@@ -251,6 +251,10 @@
   }
   .day-tab.zero .dn{color:#a898a0;font-weight:600}
   .day-tab.zero .dc{background:rgba(154,138,146,.15);color:#8a7a82}
+  .day-tab.full .dc{
+    background:rgba(122,139,111,.18);
+    color:#4a6b3e;
+  }
   .day-tab.active{
     background:linear-gradient(135deg,var(--rose),#c06080);
     border-color:var(--rose);
@@ -577,7 +581,7 @@ const PEOPLE = [
   { name:'Zeynep',  c:'#a85252', c2:'#c87272', soft:'rgba(184,92,92,.13)' }
 ];
 
-/* İzin günleri: 0=Pzt, 1=Sal, 2=Çar, 3=Per, 4=Cum, 5=Cmt, 6=Paz */
+/* Normal izin günleri: 0=Pzt, 1=Sal, 2=Çar, 3=Per, 4=Cum, 5=Cmt, 6=Paz */
 const OFF_DAYS = {
   'Tahan':   [1, 4],
   'Ezel':    [3, 4],
@@ -588,14 +592,30 @@ const OFF_DAYS = {
   'Sofia':   [3, 4]
 };
 
-/* Belirli hafta için kişi izinleri */
+/* Belirli hafta için kişi izinleri (o hafta normal izinleri geçersiz kılar) */
 const WEEK_OVERRIDES = {
-  '2026-11-09': { 'Tahan': [1, 4, 5] }  // Salı, Cuma, Cumartesi izinli
+  /* 9–15 Kasım 2026: Tahan Salı, Cuma, Cumartesi izinli */
+  '2026-11-09': {
+    'Tahan': [1, 4, 5]
+  },
+  /* 16–22 Kasım 2026: herkesin yalnızca 1 izin günü (Pzt–Per arası)
+     Tahan Pazartesi çalışıyor, Perşembe izinli.
+     Müberra (Çarşamba) ve Irmak (Perşembe) farklı günlerde. */
+  '2026-11-16': {
+    'Ezel':    [0],   // Pazartesi
+    'Hira':    [1],   // Salı
+    'Sofia':   [1],   // Salı
+    'Müberra': [2],   // Çarşamba
+    'Zeynep':  [2],   // Çarşamba
+    'Tahan':   [3],   // Perşembe
+    'Irmak':   [3]    // Perşembe
+  }
 };
 
 /* Belirli hafta için özel kurallar (Cuma günü herkes gelsin gibi) */
 const WEEK_SPECIAL = {
-  '2026-11-09': { fridayAllWork: true }
+  '2026-11-09': { fridayAllWork: true },
+  '2026-11-16': { fridayAllWork: true }
 };
 
 const TASKS = [
@@ -939,6 +959,7 @@ function renderDayTabs(weekPlan){
     if (d === activeDay) btn.classList.add('active');
     if (count === 0) btn.classList.add('zero');
     else if (count <= 3) btn.classList.add('few');
+    else if (count === PEOPLE.length) btn.classList.add('full');
 
     const dn = document.createElement('span');
     dn.className = 'dn';
@@ -979,6 +1000,8 @@ function renderCards(monday){
   if (dayPlan.workers.length === 0) meta = 'Tüm çıraklar izinli';
   else if (activeDay === 4 && dayPlan.workers.length === 1)
     meta = `Cuma nöbetçisi · ${dayPlan.slots} görev`;
+  else if (dayPlan.workers.length === PEOPLE.length)
+    meta = `Tüm çıraklar çalışıyor · ${dayPlan.slots} görev`;
   else
     meta = `${dayPlan.workers.length} çırak · ${dayPlan.slots} görev`;
 
@@ -1079,7 +1102,7 @@ function renderCards(monday){
         const names = offPeople.map(p => p.name).join(', ');
         let html = `<span class="off-icon">🌙</span><span>İzinli: <b>${names}</b></span>`;
         if (dayPlan.kesimOwner && dayPlan.kesimOwner !== FIXED_OWNER){
-          html += `<span class="off-sep">·</span><span class="off-sub">Kesim Arabası: ${dayPlan.kesimOwner}</span>`;
+          html += `<span class="off-sep">·</span><span class="off-sub">Kesim Arabası: <b>${dayPlan.kesimOwner}</b></span>`;
         }
         $offNote.classList.remove('hidden');
         $offNote.innerHTML = html;
