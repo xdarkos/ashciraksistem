@@ -598,17 +598,23 @@ const WEEK_OVERRIDES = {
   '2026-11-09': {
     'Tahan': [1, 4, 5]
   },
-  /* 16–22 Kasım 2026: herkesin yalnızca 1 izin günü (Pzt–Per arası)
-     Tahan Pazartesi çalışıyor, Perşembe izinli.
-     Müberra (Çarşamba) ve Irmak (Perşembe) farklı günlerde. */
+  /* 16–22 Kasım 2026:
+     - Tahan pazartesiden pazara kadar tüm hafta izinli
+     - Pazartesi izinlisi Ezel değil, Hira (Ezel çalışıyor)
+     - Geri kalan günler aynı
+     Mon: Hira + Tahan izinli
+     Tue: Hira + Sofia + Tahan izinli
+     Wed: Müberra + Zeynep + Tahan izinli
+     Thu: Irmak + Tahan izinli
+     Cum–Paz: yalnızca Tahan izinli, herkes çalışıyor */
   '2026-11-16': {
-    'Ezel':    [0],   // Pazartesi
-    'Hira':    [1],   // Salı
-    'Sofia':   [1],   // Salı
-    'Müberra': [2],   // Çarşamba
-    'Zeynep':  [2],   // Çarşamba
-    'Tahan':   [3],   // Perşembe
-    'Irmak':   [3]    // Perşembe
+    'Tahan':   [0, 1, 2, 3, 4, 5, 6],   // tüm hafta izinli
+    'Ezel':    [],                       // Pazartesi çalışıyor, izin yok
+    'Hira':    [0, 1],                   // Pazartesi (Ezel'in yerine) + Salı
+    'Sofia':   [1],                      // Salı
+    'Müberra': [2],                      // Çarşamba
+    'Zeynep':  [2],                      // Çarşamba
+    'Irmak':   [3]                       // Perşembe
   }
 };
 
@@ -715,7 +721,7 @@ const TODAY_IDX   = (new Date().getDay() + 6) % 7;
 function offDaysFor(name, weekIdx){
   const key = isoDate(mondayOfWeek(weekIdx));
   const ov = WEEK_OVERRIDES[key];
-  if (ov && ov[name]) return ov[name];
+  if (ov && ov[name] !== undefined) return ov[name];
   return OFF_DAYS[name] || [];
 }
 
