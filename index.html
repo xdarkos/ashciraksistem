@@ -600,17 +600,15 @@ const WEEK_OVERRIDES = {
   },
   /* 16–22 Kasım 2026:
      - Tahan pazartesiden pazara kadar tüm hafta izinli
-     - Pazartesi izinlisi Ezel değil, Hira (Ezel çalışıyor)
-     - Geri kalan günler aynı
-     Mon: Hira + Tahan izinli
-     Tue: Hira + Sofia + Tahan izinli
-     Wed: Müberra + Zeynep + Tahan izinli
-     Thu: Irmak + Tahan izinli
-     Cum–Paz: yalnızca Tahan izinli, herkes çalışıyor */
+     - Pazartesi izinlisi: Hira
+     - Salı izinlisi: Ezel (+ Sofia)
+     - Çarşamba: Müberra, Zeynep
+     - Perşembe: Irmak
+     - Cum–Paz: yalnızca Tahan izinli, herkes çalışıyor */
   '2026-11-16': {
     'Tahan':   [0, 1, 2, 3, 4, 5, 6],   // tüm hafta izinli
-    'Ezel':    [],                       // Pazartesi çalışıyor, izin yok
-    'Hira':    [0, 1],                   // Pazartesi (Ezel'in yerine) + Salı
+    'Hira':    [0],                      // Pazartesi
+    'Ezel':    [1],                      // Salı
     'Sofia':   [1],                      // Salı
     'Müberra': [2],                      // Çarşamba
     'Zeynep':  [2],                      // Çarşamba
